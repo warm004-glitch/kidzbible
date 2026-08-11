@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>유치부 초등저학년 말씀암송</title>
+    <title>영안교회 유치부 초등저학년 말씀암송</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
@@ -64,7 +64,7 @@
 
             <div id="view-puzzle" class="hidden space-y-2">
                 <div class="bg-white rounded-2xl shadow-sm p-4 border-2 border-emerald-200 text-center">
-                    <h2 class="text-xs font-black text-emerald-700 mb-2">말씀 조각을 순서대로 맞추어보세요</h2>
+                    <h2 class="text-xs font-black text-emerald-700 mb-2">말씀 조각을 두 단어씩 순서대로 맞추어보세요</h2>
                     <div id="puzzle-target" class="min-h-[60px] bg-emerald-50 border border-dashed border-emerald-300 rounded-xl p-2.5 flex flex-wrap gap-1 mb-2 items-center"></div>
                     <div id="puzzle-source" class="flex flex-wrap gap-1 mb-3 max-h-[100px] overflow-y-auto justify-center"></div>
                     <div class="flex gap-2">
@@ -112,7 +112,7 @@
             { id: "D-1", ref: "마태복음 6:33", text: "그런즉 너희는 먼저 그의 나라와 그의 의를 구하라 그리하면 이 모든 것을 너희에게 더하시리라", blankIdx: 3 },
             { id: "D-2", ref: "누가복음 9:23", text: "또 무리에게 이르시되 아무든지 나를 따라오려거든 자기를 부인하고 날마다 제 십자가를 지고 나를 따를 것이니라", blankIdx: 3 },
             { id: "D-4", ref: "로마서 12:2", text: "너희는 이 세대를 본받지 말고 오직 마음을 새롭게 함으로 변화를 받아 하나님의 선하시고 기뻐하시고 온전하신 뜻이 무엇인지 분별하도록 하라", blankIdx: 3 },
-            { id: "D-5", ref: "고린도전서 15:58", text: "그러므로 내 사랑하는 형제들아 견실하며 흔들리지 말고 항상 주의 일에 더욱 힘쓰는 자들이 되라 이는 너희 수고가 주 안에서 헛되지 않은 줄 앎이라", blankIdx: 3 },
+            { id: "D-5", ref: "고린도전서 15:58", text: "그러므로 내 사랑하는 형제들아 견실하며 흔들리지 말고 항상 주의 일에 더욱 힘쓰는 자들이 되라 이는 너희 수고가 주 안에서 헛되지 않은 줄 암이라", blankIdx: 3 },
             { id: "D-7", ref: "마가복음 10:45", text: "인자가 온 것은 섬김을 받으려 함이 아니라 도리어 섬기려 하고 자기 목숨을 많은 사람의 대속물로 주려 함이니라", blankIdx: 2 },
             { id: "D-9", ref: "잠언 3:9-10", text: "네 재물과 네 소산물의 처음 익은 열매로 여호와를 공경하라 그리하면 네 창고가 가득히 차고 네 포도즙 틀에 새 포도즙이 가득하리라", blankIdx: 2 },
             { id: "D-11", ref: "사도행전 1:8", text: "오직 성령이 너희에게 임하시면 너희가 권능을 받고 예루살렘과 온 유대와 사마리아와 땅 끝까지 이르러 내 증인이 되리라", blankIdx: 2 },
@@ -130,8 +130,21 @@
         let currentVoice = 'normal';
         const fakeWordsPool = ["믿음", "사랑", "소망", "기쁨", "은혜", "평안", "생명", "진리", "축복", "기도"];
 
-        let userPuzzleWords = [];
-        let shuffledPuzzleWords = [];
+        let userPuzzleChunks = [];
+        let shuffledPuzzleChunks = [];
+
+        function getChunks(text) {
+            const words = text.split(' ');
+            const chunks = [];
+            for (let i = 0; i < words.length; i += 2) {
+                if (i + 1 < words.length) {
+                    chunks.push(words[i] + ' ' + words[i + 1]);
+                } else {
+                    chunks.push(words[i]);
+                }
+            }
+            return chunks;
+        }
 
         function switchTab(tab) {
             ['study', 'quiz1', 'puzzle'].forEach(t => {
@@ -267,8 +280,9 @@
 
         function loadPuzzle() {
             const v = verses[currentIndex];
-            userPuzzleWords = [];
-            shuffledPuzzleWords = v.text.split(' ').sort(() => Math.random() - 0.5);
+            userPuzzleChunks = [];
+            const correctChunks = getChunks(v.text);
+            shuffledPuzzleChunks = [...correctChunks].sort(() => Math.random() - 0.5);
             renderPuzzleBoard();
             document.getElementById('puzzle-result').classList.add('hidden');
         }
@@ -277,22 +291,22 @@
             const sourceContainer = document.getElementById('puzzle-source');
             const targetContainer = document.getElementById('puzzle-target');
 
-            sourceContainer.innerHTML = shuffledPuzzleWords.map((w, i) => `
-                <button onclick="selectPuzzleWord('${w}', ${i}, 'source')" class="px-2 py-1 bg-emerald-100 active:bg-emerald-200 text-emerald-900 rounded-lg text-xs font-bold transition">${w}</button>
+            sourceContainer.innerHTML = shuffledPuzzleChunks.map((chunk, i) => `
+                <button onclick="selectPuzzleChunk('${chunk}', ${i}, 'source')" class="px-2 py-1 bg-emerald-100 active:bg-emerald-200 text-emerald-900 rounded-lg text-xs font-bold transition">${chunk}</button>
             `).join('');
 
-            targetContainer.innerHTML = userPuzzleWords.map((w, i) => `
-                <button onclick="selectPuzzleWord('${w}', ${i}, 'target')" class="px-2 py-1 bg-emerald-600 text-white rounded-lg text-xs font-bold transition">${w}</button>
+            targetContainer.innerHTML = userPuzzleChunks.map((chunk, i) => `
+                <button onclick="selectPuzzleChunk('${chunk}', ${i}, 'target')" class="px-2 py-1 bg-emerald-600 text-white rounded-lg text-xs font-bold transition">${chunk}</button>
             `).join('');
         }
 
-        function selectPuzzleWord(word, index, from) {
+        function selectPuzzleChunk(chunk, index, from) {
             if (from === 'source') {
-                userPuzzleWords.push(word);
-                shuffledPuzzleWords.splice(index, 1);
+                userPuzzleChunks.push(chunk);
+                shuffledPuzzleChunks.splice(index, 1);
             } else {
-                shuffledPuzzleWords.push(word);
-                userPuzzleWords.splice(index, 1);
+                shuffledPuzzleChunks.push(chunk);
+                userPuzzleChunks.splice(index, 1);
             }
             renderPuzzleBoard();
         }
@@ -306,8 +320,10 @@
             const resultEl = document.getElementById('puzzle-result');
             resultEl.classList.add('hidden');
 
-            const userStr = userPuzzleWords.join(' ');
-            if (userStr === v.text) {
+            const userStr = userPuzzleChunks.join(' ');
+            const correctStr = getChunks(v.text).join(' ');
+
+            if (userStr === correctStr) {
                 resultEl.innerText = "모든 조각을 맞혔어요 참 잘했어요";
                 resultEl.className = "mt-1 text-xs font-bold text-emerald-600";
                 setTimeout(() => {
